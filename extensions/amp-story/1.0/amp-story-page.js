@@ -305,7 +305,7 @@ export class AmpStoryPage extends AMP.BaseElement {
     this.initializeMediaPool_();
     this.maybeCreateAnimationManager_();
     // DESCRIPTION
-    this.setUpAdvancementConfig_();
+    this.setUpAdvancementConfig_(true /* isFirstSetup */);
     this.getAmpDoc().onVisibilityChanged(() => this.setUpAdvancementConfig_());
     this.setDescendantCssTextStyles_();
     this.storeService_.subscribe(
@@ -323,17 +323,21 @@ export class AmpStoryPage extends AMP.BaseElement {
 
   /**
    * DESCRIPTION
+   * @param {boolean} isFirstSetup Whether this is the first time that this
+   *     method is being called.
    * @private
    */
-  setUpAdvancementConfig_() {
-    if (!this.getAmpDoc().isPreview() && !this.getAmpDoc().isVisible()) {
+  setUpAdvancementConfig_(isFirstSetup = false) {
+    const ampdoc = this.getAmpDoc();
+    if (!ampdoc.isPreview() && !ampdoc.isVisible() && !isFirstSetup) {
       return;
     }
-    if (this.getAmpDoc().isPreview()) {
+
+    if (ampdoc.isPreview()) {
       // DESCRIPTION
       this.setupAutoAdvanceForPreview_();
     }
-    if (this.getAmpDoc().isVisible()) {
+    if (ampdoc.isVisible()) {
       // DESCRIPTION
       this.setupAutoAdvanceForVisible_();
       this.maybeSetStoryNextUp_();
