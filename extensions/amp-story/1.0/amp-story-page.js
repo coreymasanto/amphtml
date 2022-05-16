@@ -353,6 +353,15 @@ export class AmpStoryPage extends AMP.BaseElement {
     this.advancement_.addProgressListener((progress) =>
       this.emitProgress_(progress)
     );
+
+    // DESCRIPTION
+    if (
+      this.state_ === PageState.NOT_ACTIVE &&
+      this.isActive() &&
+      !this.advancement_.isRunning()
+    ) {
+      this.advancement_.start();
+    }
   }
 
   /**
