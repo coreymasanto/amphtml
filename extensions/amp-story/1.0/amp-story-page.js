@@ -250,6 +250,10 @@ export class AmpStoryPage extends AMP.BaseElement {
 
     /** @private {?number} Time at which an audio element failed playing. */
     this.playAudioElementFromTimestamp_ = null;
+
+    /** @private {?string} DESCRIPTION */
+    this.initialAutoAdvanceValue_ =
+      this.element.getAttribute('auto-advance-after');
   }
 
   /**
@@ -300,18 +304,9 @@ export class AmpStoryPage extends AMP.BaseElement {
     this.markMediaElementsWithPreload_();
     this.initializeMediaPool_();
     this.maybeCreateAnimationManager_();
-    if (this.getAmpDoc().isPreview()) {
-      this.setupAutoAdvanceForPreview_();
-    }
-    this.maybeSetStoryNextUp_();
-    this.advancement_ = AdvancementConfig.forElement(this.win, this.element);
-    this.advancement_.addPreviousListener(() => this.previous());
-    this.advancement_.addAdvanceListener(() =>
-      this.next(/* opt_isAutomaticAdvance */ true)
-    );
-    this.advancement_.addProgressListener((progress) =>
-      this.emitProgress_(progress)
-    );
+    // DESCRIPTION
+    this.setUpAdvancementConfig_();
+    this.getAmpDoc().onVisibilityChanged(() => this.setUpAdvancementConfig_());
     this.setDescendantCssTextStyles_();
     this.storeService_.subscribe(
       StateProperty.UI_STATE,
@@ -324,6 +319,36 @@ export class AmpStoryPage extends AMP.BaseElement {
     this.initializeTabbableElements_();
     this.maybeApplyFirstAnimationFrameOrFinish();
     this.maybeConvertCtaLayerToPageOutlink_();
+  }
+
+  /**
+   * DESCRIPTION
+   * @private
+   */
+  setUpAdvancementConfig_() {
+    if (!this.getAmpDoc().isPreview() && !this.getAmpDoc().isVisible()) {
+      return;
+    }
+    if (this.getAmpDoc().isPreview()) {
+      // DESCRIPTION
+      this.setupAutoAdvanceForPreview_();
+    }
+    if (this.getAmpDoc().isVisible()) {
+      // DESCRIPTION
+      this.setupAutoAdvanceForVisible_();
+      this.maybeSetStoryNextUp_();
+    }
+
+    // DESCRIPTION
+    this.advancement_?.removeAllAddedListeners();
+    this.advancement_ = AdvancementConfig.forElement(this.win, this.element);
+    this.advancement_.addPreviousListener(() => this.previous());
+    this.advancement_.addAdvanceListener(() =>
+      this.next(/* opt_isAutomaticAdvance */ true)
+    );
+    this.advancement_.addProgressListener((progress) =>
+      this.emitProgress_(progress)
+    );
   }
 
   /**
@@ -352,6 +377,22 @@ export class AmpStoryPage extends AMP.BaseElement {
             });
           }
         });
+    }
+  }
+
+  /**
+   * Configures the page to auto advance using default durations.
+   * @private
+   */
+  setupAutoAdvanceForVisible_() {
+    // DESCRIPTION
+    if (this.initialAutoAdvanceValue_) {
+      this.element.setAttribute(
+        'auto-advance-after',
+        this.initialAutoAdvanceValue_
+      );
+    } else {
+      this.element.removeAttribute('auto-advance-after');
     }
   }
 

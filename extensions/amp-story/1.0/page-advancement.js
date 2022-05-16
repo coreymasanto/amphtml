@@ -132,6 +132,16 @@ export class AdvancementConfig {
   }
 
   /**
+   * DESCRIPTION
+   */
+  removeAllAddedListeners() {
+    this.progressListeners_ = [];
+    this.advanceListeners_ = [];
+    this.previousListeners_ = [];
+    this.tapNavigationListeners_ = [];
+  }
+
+  /**
    * Invoked when the advancement configuration should begin taking effect.
    */
   start() {
