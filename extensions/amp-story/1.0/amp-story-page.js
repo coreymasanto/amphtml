@@ -356,7 +356,7 @@ export class AmpStoryPage extends AMP.BaseElement {
 
     // DESCRIPTION
     if (
-      this.state_ === PageState.NOT_ACTIVE &&
+      this.state_ === PageState.PLAYING &&
       this.isActive() &&
       !this.advancement_.isRunning()
     ) {
