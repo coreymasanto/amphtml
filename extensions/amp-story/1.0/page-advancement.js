@@ -867,9 +867,7 @@ export class TimeBasedAdvancement extends AdvancementConfig {
       return 0;
     }
 
-    const progress =
-      (this.getCurrentTimestampMs_() - this.startTimeMs_) / this.delayMs_;
-
+    const progress = this.getProgressMs() / this.delayMs_;
     return Math.min(Math.max(progress, 0), 1);
   }
 
@@ -895,6 +893,26 @@ export class TimeBasedAdvancement extends AdvancementConfig {
       this.remainingDelayMs_ += newDelayMs - this.delayMs_;
     }
     this.delayMs_ = newDelayMs;
+  }
+
+  /**
+   * @return {number} The progress, in terms of milliseconds elapsed.
+   */
+  getProgressMs() {
+    if (this.startTimeMs_ === null) {
+      return 0;
+    }
+    return this.getCurrentTimestampMs_() - this.startTimeMs_;
+  }
+
+  /**
+   * @param {number} progressMs The progress, in terms of milliseconds elapsed,
+   *     that should be displayed.
+   */
+  setProgressMs(progressMs) {
+    // this.remainingDelayMs_ = this.startTimeMs_ + this.delayMs_ - this.getCurrentTimestampMs_();
+    // The user can submit the progress, which might allow us to use the following calculation, based on setProgressMs() above
+    this.remainingDelayMs_ = this.delayMs_ - progressMs;
   }
 
   /**
