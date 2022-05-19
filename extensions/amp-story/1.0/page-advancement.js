@@ -98,6 +98,13 @@ export class AdvancementConfig {
   }
 
   /**
+   * @return {string} A string indicating the type of advancement config.
+   */
+  getType() {
+    return 'AdvancementConfig';
+  }
+
+  /**
    * @param {function(number)} progressListener A function that handles when the
    *     progress of the current page has been updated.  It accepts a number
    *     between 0.0 and 1.0 as its only argument, that represents the current
@@ -309,6 +316,11 @@ export class ManualAdvancement extends AdvancementConfig {
           : TapNavigationDirection.NEXT,
       },
     };
+  }
+
+  /** @override */
+  getType() {
+    return 'ManualAdvancement';
   }
 
   /** @override */
@@ -806,6 +818,11 @@ export class TimeBasedAdvancement extends AdvancementConfig {
     }
   }
 
+  /** @override */
+  getType() {
+    return 'TimeBasedAdvancement';
+  }
+
   /**
    * @return {number} The current timestamp, in milliseconds.
    * @private
@@ -910,8 +927,6 @@ export class TimeBasedAdvancement extends AdvancementConfig {
    *     that should be displayed.
    */
   setProgressMs(progressMs) {
-    // this.remainingDelayMs_ = this.startTimeMs_ + this.delayMs_ - this.getCurrentTimestampMs_();
-    // The user can submit the progress, which might allow us to use the following calculation, based on setProgressMs() above
     this.remainingDelayMs_ = this.delayMs_ - progressMs;
   }
 
@@ -982,6 +997,11 @@ export class MediaBasedAdvancement extends AdvancementConfig {
 
     /** @private @const {!./amp-story-store-service.AmpStoryStoreService} */
     this.storeService_ = getStoreService(win);
+  }
+
+  /** @override */
+  getType() {
+    return 'MediaBasedAdvancement';
   }
 
   /**
