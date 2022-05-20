@@ -150,8 +150,9 @@ export class AdvancementConfig {
 
   /**
    * Invoked when the advancement configuration should begin taking effect.
+   * @param {number=} unusedProgressStartVal DESCRIPTION
    */
-  start() {
+  start(unusedProgressStartVal = undefined) {
     this.isRunning_ = true;
   }
 
@@ -186,9 +187,12 @@ export class AdvancementConfig {
     return 1;
   }
 
-  /** @protected */
-  onProgressUpdate() {
-    const progress = this.getProgress();
+  /**
+   * @param {number} progressOverride
+   * @protected
+   */
+  onProgressUpdate(progressOverride = undefined) {
+    const progress = progressOverride ?? this.getProgress();
     this.progressListeners_.forEach((progressListener) => {
       progressListener(progress);
     });
@@ -832,8 +836,14 @@ export class TimeBasedAdvancement extends AdvancementConfig {
   }
 
   /** @override */
-  start() {
+  start(progressStartVal = undefined) {
     super.start();
+
+    if (progressStartVal) {
+      // DESCRIPTION
+      const remainingDelayPct = 1 - progressStartVal;
+      this.remainingDelayMs_ = this.delayMs_ * remainingDelayPct;
+    }
 
     if (this.remainingDelayMs_) {
       this.startTimeMs_ =
@@ -923,11 +933,11 @@ export class TimeBasedAdvancement extends AdvancementConfig {
   }
 
   /**
-   * @param {number} progressMs The progress, in terms of milliseconds elapsed,
-   *     that should be displayed.
+   * @return {number} The time, in milliseconds, that this advancement was
+   *     configured to wait before advancing.
    */
-  setProgressMs(progressMs) {
-    this.remainingDelayMs_ = this.delayMs_ - progressMs;
+  getDelayMs() {
+    return this.delayMs_;
   }
 
   /**
@@ -1038,19 +1048,22 @@ export class MediaBasedAdvancement extends AdvancementConfig {
   }
 
   /** @override */
-  start() {
+  start(progressStartVal = undefined) {
     super.start();
 
     // Prevents race condition when checking for video interface classname.
     (this.element_.build ? this.element_.build() : Promise.resolve()).then(() =>
-      this.startWhenBuilt_()
+      this.startWhenBuilt_(progressStartVal)
     );
   }
 
-  /** @private */
-  startWhenBuilt_() {
+  /**
+   * @param {number=} progressStartVal DESCRIPTION
+   * @private
+   */
+  startWhenBuilt_(progressStartVal = undefined) {
     if (this.isVideoInterfaceVideo_()) {
-      this.startVideoInterfaceElement_();
+      this.startVideoInterfaceElement_(progressStartVal);
       return;
     }
 
@@ -1059,7 +1072,7 @@ export class MediaBasedAdvancement extends AdvancementConfig {
     }
 
     if (this.mediaElement_) {
-      this.startHtmlMediaElement_();
+      this.startHtmlMediaElement_(progressStartVal);
       return;
     }
 
@@ -1070,8 +1083,11 @@ export class MediaBasedAdvancement extends AdvancementConfig {
     );
   }
 
-  /** @private */
-  startHtmlMediaElement_() {
+  /**
+   * @param {number=} progressStartVal DESCRIPTION
+   * @private
+   */
+  startHtmlMediaElement_(progressStartVal = undefined) {
     const mediaElement = dev().assertElement(
       this.mediaElement_,
       'Media element was unspecified.'
@@ -1084,7 +1100,7 @@ export class MediaBasedAdvancement extends AdvancementConfig {
       listenOnce(mediaElement, 'ended', () => this.onAdvance())
     );
 
-    this.onProgressUpdate();
+    this.onProgressUpdate(progressStartVal);
 
     this.timer_.poll(POLL_INTERVAL_MS, () => {
       this.onProgressUpdate();
@@ -1092,8 +1108,11 @@ export class MediaBasedAdvancement extends AdvancementConfig {
     });
   }
 
-  /** @private */
-  startVideoInterfaceElement_() {
+  /**
+   * @param {number=} progressStartVal DESCRIPTION
+   * @private
+   */
+  startVideoInterfaceElement_(progressStartVal = undefined) {
     this.element_.getImpl().then((video) => {
       this.video_ = video;
     });
@@ -1112,7 +1131,7 @@ export class MediaBasedAdvancement extends AdvancementConfig {
       )
     );
 
-    this.onProgressUpdate();
+    this.onProgressUpdate(progressStartVal);
 
     this.timer_.poll(POLL_INTERVAL_MS, () => {
       this.onProgressUpdate();

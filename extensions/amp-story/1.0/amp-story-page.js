@@ -8,6 +8,7 @@
  * </amp-story-page>
  * </code>
  */
+import {devAssert} from '#core/assert';
 import {CommonSignals_Enum} from '#core/constants/common-signals';
 import {VisibilityState_Enum} from '#core/constants/visibility-state';
 import {Deferred} from '#core/data-structures/promise';
@@ -414,22 +415,33 @@ export class AmpStoryPage extends AMP.BaseElement {
    * @private
    */
   handlePreviewToVisibleTransition_() {
-    let progressMs;
-    if (this.advancement_?.getProgressMs) {
-      progressMs = this.advancement_?.getProgressMs();
-    }
+    devAssert(
+      this.advancement_?.getType() === 'TimeBasedAdvancement',
+      'The advancement is expected to be time-based in preview mode'
+    );
+
+    // DESCRIPTION
+    const progress = this.advancement_.getProgress();
+    const progressMs = this.advancement_.getProgressMs();
 
     this.initializeAdvancementConfig_();
 
-    if (progressMs && this.advancement_.setProgressMs) {
-      // DESCRIPTION
-      this.advancement_.setProgressMs(progressMs);
-    } else {
-      // DESCRIPTION
-      this.emitProgress_(1.0);
-    }
+    switch (this.advancement_.getType()) {
+      case 'AdvancementConfig':
+        // DESCRIPTION
+        this.emitProgress_(1.0);
+        this.advancement_.start();
+        break;
 
-    this.advancement_.start();
+      case 'MediaBasedAdvancement':
+        // DESCRIPTION
+        this.advancement_.start(progress);
+        break;
+
+      case 'TimeBasedAdvancement':
+        // DESCRIPTION
+        this.advancement_.start(progressMs / this.advancement_.getDelayMs());
+    }
   }
 
   /**
